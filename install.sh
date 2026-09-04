@@ -2,11 +2,11 @@
 
 set -e
 
-BASE_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+REPO="https://github.com/Rainsmp/vps-installer.git"
+INSTALL_DIR="$HOME/vps-installer"
 
 clear
 
-echo
 echo "╔══════════════════════════════════════════════╗"
 echo "║                                              ║"
 echo "║          TERMUX VPS INSTALLER                ║"
@@ -15,28 +15,48 @@ echo "║                                              ║"
 echo "╚══════════════════════════════════════════════╝"
 echo
 
-if [[ -z "${PREFIX:-}" ]]; then
-    echo "[✗] This script must be run inside Termux."
-    exit 1
-fi
-
 echo "[INFO] Updating Termux..."
 pkg update -y
+pkg upgrade -y
 
 echo
 echo "[INFO] Installing required packages..."
 pkg install -y proot-distro curl wget git nano openssh
 
 echo
+echo "[INFO] Downloading VPS installer..."
+
+if [ -d "$INSTALL_DIR/.git" ]; then
+    echo "[INFO] Updating existing installer..."
+    cd "$INSTALL_DIR"
+    git pull --ff-only
+else
+    echo "[INFO] Cloning installer..."
+    rm -rf "$INSTALL_DIR"
+    git clone "$REPO" "$INSTALL_DIR"
+    cd "$INSTALL_DIR"
+fi
+
+echo
 echo "[INFO] Setting permissions..."
 
-chmod +x "$BASE_DIR/menu.sh"
-chmod +x "$BASE_DIR/config/config.sh"
-chmod +x "$BASE_DIR/distro/"*.sh
-chmod +x "$BASE_DIR/options/"*.sh
+chmod +x install.sh
+chmod +x menu.sh
+
+if [ -d options ]; then
+    chmod +x options/*.sh
+fi
+
+if [ -d distro ]; then
+    chmod +x distro/*.sh
+fi
+
+if [ -d config ]; then
+    chmod +x config/*.sh
+fi
 
 echo
-echo "[✓] VPS Manager installation complete."
+echo "[SUCCESS] Installer is ready!"
 echo
 
-exec bash "$BASE_DIR/menu.sh"
+exec "$INSTALL_DIR/menu.sh"

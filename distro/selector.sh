@@ -1,85 +1,110 @@
 #!/data/data/com.termux/files/usr/bin/bash
 
-source "$(cd "$(dirname "$0")/../config" && pwd)/config.sh"
+BASE_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+source "$BASE_DIR/config/config.sh"
 
-select_distro() {
+# Colors
+RESET='\033[0m'
+BOLD='\033[1m'
 
-    clear
+RED='\033[31m'
+GREEN='\033[32m'
+YELLOW='\033[33m'
+BLUE='\033[34m'
+MAGENTA='\033[35m'
+CYAN='\033[36m'
+WHITE='\033[37m'
+
+clear
+
+echo -e "${CYAN}${BOLD}╔══════════════════════════════════════════════╗${RESET}"
+echo -e "${CYAN}${BOLD}║${RESET}             ${BLUE}${BOLD}TERMUX VPS MANAGER${RESET}               ${CYAN}${BOLD}║${RESET}"
+echo -e "${CYAN}${BOLD}╚══════════════════════════════════════════════╝${RESET}"
+echo
+echo -e "              ${MAGENTA}${BOLD}SELECT LINUX VPS${RESET}"
+echo
+
+DISTROS=(
+    "debian"
+    "ubuntu"
+    "alpine"
+    "archlinux"
+    "fedora"
+    "opensuse"
+    "void"
+    "manjaro"
+    "artix"
+    "deepin"
+    "openkylin"
+    "pardus"
+)
+
+NAMES=(
+    "Debian"
+    "Ubuntu"
+    "Alpine Linux"
+    "Arch Linux"
+    "Fedora"
+    "openSUSE"
+    "Void Linux"
+    "Manjaro"
+    "Artix Linux"
+    "Deepin"
+    "OpenKylin"
+    "Pardus"
+)
+
+for i in "${!DISTROS[@]}"; do
+    printf "${CYAN}[%2d]${RESET} ${WHITE}%s${RESET}\n" "$((i + 1))" "${NAMES[$i]}"
+done
+
+echo
+echo -e "${RED}[0]${RESET} ${WHITE}Back${RESET}"
+echo
+
+echo -ne "${YELLOW}${BOLD}Select distribution: ${RESET}"
+read -r choice
+
+if [ "$choice" = "0" ]; then
+    exit 0
+fi
+
+if ! [[ "$choice" =~ ^[0-9]+$ ]] || \
+   [ "$choice" -lt 1 ] || \
+   [ "$choice" -gt "${#DISTROS[@]}" ]; then
 
     echo
-    echo "╔══════════════════════════════════════════════╗"
-    echo "║                                              ║"
-    echo "║          SELECT LINUX DISTRIBUTION            ║"
-    echo "║                                              ║"
-    echo "╚══════════════════════════════════════════════╝"
+    echo -e "${RED}${BOLD}[✗] Invalid selection.${RESET}"
+    sleep 2
+    exec "$0"
+fi
+
+SELECTED="${DISTROS[$((choice - 1))]}"
+SELECTED_NAME="${NAMES[$((choice - 1))]}"
+
+set_selected_distro "$SELECTED"
+
+echo
+echo -e "${GREEN}${BOLD}[✓] Selected:${RESET} ${WHITE}${SELECTED_NAME}${RESET}"
+echo
+
+if distro_exists "$SELECTED"; then
+    echo -e "${GREEN}[✓]${RESET} ${WHITE}${SELECTED_NAME} is already installed.${RESET}"
+else
+    echo -e "${YELLOW}[INFO]${RESET} Installing ${CYAN}${SELECTED_NAME}${RESET}..."
     echo
 
-    local list
-    list="$(proot-distro list 2>/dev/null || true)"
-
-    if [[ -z "$list" ]]; then
-        error "Unable to read proot-distro distributions."
-        pause
-        return 1
-    fi
-
-    local distros=()
-
-    while IFS= read -r line; do
-
-        local name
-
-        name="$(echo "$line" | sed -n 's/^[[:space:]]*\([a-zA-Z0-9_-]\+\).*/\1/p' | head -n 1)"
-
-        case "$name" in
-            alpine|archlinux|artix|debian|deepin|fedora|manjaro|openkylin|opensuse|pardus|ubuntu|void)
-                distros+=("$name")
-                ;;
-        esac
-
-    done <<< "$list"
-
-    if [[ ${#distros[@]} -eq 0 ]]; then
-        error "No supported distributions were detected."
+    if proot-distro install "$SELECTED"; then
         echo
-        echo "$list"
-        pause
-        return 1
-    fi
-
-    local i=1
-
-    for distro in "${distros[@]}"; do
-        echo "[$i] $distro"
-        ((i++))
-    done
-
-    echo
-    echo "[0] Back"
-    echo
-
-    read -rp "Select distribution: " choice
-
-    if [[ "$choice" == "0" ]]; then
-        return 1
-    fi
-
-    if [[ "$choice" =~ ^[0-9]+$ ]] &&
-       (( choice >= 1 && choice <= ${#distros[@]} )); then
-
-        local selected="${distros[$((choice-1))]}"
-
-        set_selected_distro "$selected"
-
+        echo -e "${GREEN}${BOLD}[✓] VPS installation completed!${RESET}"
+    else
         echo
-        success "Selected: $selected"
-        sleep 1
-
-        return 0
+        echo -e "${RED}${BOLD}[✗] VPS installation failed.${RESET}"
+        pause
+        exit 1
     fi
+fi
 
-    error "Invalid selection."
-    pause
-
-    return 1
-}
+echo
+echo -e "${GREEN}${BOLD}[✓] VPS Ready:${RESET} ${CYAN}${SELECTED_NAME}${RESET}"
+pause

@@ -1,86 +1,95 @@
 #!/data/data/com.termux/files/usr/bin/bash
 
 BASE_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-
 source "$BASE_DIR/config/config.sh"
+
+# Colors
+RESET=$'\033[0m'
+BOLD=$'\033[1m'
+
+RED=$'\033[31m'
+GREEN=$'\033[32m'
+YELLOW=$'\033[33m'
+BLUE=$'\033[34m'
+MAGENTA=$'\033[35m'
+CYAN=$'\033[36m'
+WHITE=$'\033[37m'
 
 while true; do
 
     clear
 
-    CURRENT="$(get_selected_distro)"
+    echo
+    printf "%s%s╔══════════════════════════════════════════════╗%s\n" "$CYAN" "$BOLD" "$RESET"
+    printf "%s%s║%s             %s%sTERMUX VPS MANAGER%s               %s%s║%s\n" \
+        "$CYAN" "$BOLD" "$RESET" \
+        "$BLUE" "$BOLD" " " \
+        "$CYAN" "$BOLD" "$RESET"
+    printf "%s%s╚══════════════════════════════════════════════╝%s\n" "$CYAN" "$BOLD" "$RESET"
 
     echo
-    echo "╔══════════════════════════════════════════════╗"
-    echo "║                                              ║"
-    echo "║             TERMUX VPS MANAGER               ║"
-    printf "║                    v%-19s║\n" "$VERSION"
-    echo "║                                              ║"
-    echo "╚══════════════════════════════════════════════╝"
-    echo
 
-    if [[ -n "$CURRENT" ]]; then
-        echo "Current VPS: $CURRENT"
-        echo
+    CURRENT="$(get_selected_distro 2>/dev/null || true)"
+
+    if [ -n "$CURRENT" ]; then
+        printf "              %s%sCURRENT VPS: %s%s%s\n" \
+            "$GREEN" "$BOLD" "$CURRENT" "$RESET" ""
+    else
+        printf "              %s%sNO VPS SELECTED%s\n" \
+            "$YELLOW" "$BOLD" "$RESET"
     fi
 
-    echo "[1] Delete VPS"
-    echo "[2] Reinstall VPS"
-    echo "[3] Create VPS"
-    echo "[4] Start VPS"
-    echo "[5] Restart VPS"
-    echo "[6] Stop VPS"
-    echo "[7] Enter VPS"
-    echo "[8] VPS Status"
-    echo "[9] Exit"
     echo
 
-    read -rp "Select an option [1-9]: " choice
+    printf "%s[1]%s %sDelete VPS%s\n" "$CYAN" "$RESET" "$WHITE" "$RESET"
+    printf "%s[2]%s %sReinstall VPS%s\n" "$CYAN" "$RESET" "$WHITE" "$RESET"
+    printf "%s[3]%s %sCreate VPS%s\n" "$CYAN" "$RESET" "$WHITE" "$RESET"
+    printf "%s[4]%s %sStart VPS%s\n" "$CYAN" "$RESET" "$WHITE" "$RESET"
+    printf "%s[5]%s %sRestart VPS%s\n" "$CYAN" "$RESET" "$WHITE" "$RESET"
+    printf "%s[6]%s %sStop VPS%s\n" "$CYAN" "$RESET" "$WHITE" "$RESET"
+    printf "%s[7]%s %sEnter VPS%s\n" "$CYAN" "$RESET" "$WHITE" "$RESET"
+    printf "%s[8]%s %sVPS Status%s\n" "$CYAN" "$RESET" "$WHITE" "$RESET"
+    printf "%s[9]%s %sExit%s\n" "$RED" "$RESET" "$WHITE" "$RESET"
+
+    echo
+
+    printf "%s%sSelect option: %s" "$YELLOW" "$BOLD" "$RESET"
+    read -r choice
 
     case "$choice" in
-
         1)
-            bash "$OPTIONS_DIR/delete.sh"
+            "$BASE_DIR/options/delete.sh"
             ;;
-
         2)
-            bash "$OPTIONS_DIR/reinstall.sh"
+            "$BASE_DIR/options/reinstall.sh"
             ;;
-
         3)
-            bash "$OPTIONS_DIR/create.sh"
+            "$BASE_DIR/options/create.sh"
             ;;
-
         4)
-            bash "$OPTIONS_DIR/start.sh"
+            "$BASE_DIR/options/start.sh"
             ;;
-
         5)
-            bash "$OPTIONS_DIR/restart.sh"
+            "$BASE_DIR/options/restart.sh"
             ;;
-
         6)
-            bash "$OPTIONS_DIR/stop.sh"
+            "$BASE_DIR/options/stop.sh"
             ;;
-
         7)
-            bash "$OPTIONS_DIR/enter.sh"
+            "$BASE_DIR/options/enter.sh"
             ;;
-
         8)
-            bash "$OPTIONS_DIR/status.sh"
+            "$BASE_DIR/options/status.sh"
             ;;
-
         9)
-            bash "$OPTIONS_DIR/exit.sh"
+            "$BASE_DIR/options/exit.sh"
             exit 0
             ;;
-
         *)
-            error "Invalid option."
-            sleep 1
+            echo
+            printf "%s%s[✗] Invalid option.%s\n" "$RED" "$BOLD" "$RESET"
+            sleep 2
             ;;
-
     esac
 
 done

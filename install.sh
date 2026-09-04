@@ -17,7 +17,6 @@ echo
 
 echo "[INFO] Updating Termux..."
 pkg update -y
-pkg upgrade -y
 
 echo
 echo "[INFO] Installing required packages..."
@@ -27,12 +26,9 @@ echo
 echo "[INFO] Downloading VPS installer..."
 
 if [ -d "$INSTALL_DIR/.git" ]; then
-    echo "[INFO] Updating existing installer..."
     cd "$INSTALL_DIR"
     git pull --ff-only
 else
-    echo "[INFO] Cloning installer..."
-    rm -rf "$INSTALL_DIR"
     git clone "$REPO" "$INSTALL_DIR"
     cd "$INSTALL_DIR"
 fi
@@ -40,20 +36,10 @@ fi
 echo
 echo "[INFO] Setting permissions..."
 
-chmod +x install.sh
-chmod +x menu.sh
-
-if [ -d options ]; then
-    chmod +x options/*.sh
-fi
-
-if [ -d distro ]; then
-    chmod +x distro/*.sh
-fi
-
-if [ -d config ]; then
-    chmod +x config/*.sh
-fi
+chmod +x "$INSTALL_DIR/menu.sh"
+chmod +x "$INSTALL_DIR"/options/*.sh
+chmod +x "$INSTALL_DIR"/distro/*.sh
+chmod +x "$INSTALL_DIR"/config/*.sh
 
 echo
 echo "[SUCCESS] Installer is ready!"
